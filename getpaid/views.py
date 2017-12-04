@@ -83,8 +83,16 @@ class FallbackView(RedirectView):
             url_name = getattr(settings, 'GETPAID_SUCCESS_URL_NAME', None)
             if url_name is not None:
                 return reverse(url_name, kwargs={'pk': self.payment.order_id})
+              
+            success_url_handler = getattr(self.payment.order, "get_payment_success_url", None)
+            if success_url_handler:
+                return success_url_handler()
         else:
             url_name = getattr(settings, 'GETPAID_FAILURE_URL_NAME', None)
             if url_name is not None:
                 return reverse(url_name, kwargs={'pk': self.payment.order_id})
+            
+            failure_url_handler = getattr(self.payment.order, "get_payment_failure_url", None)
+            if failure_url_handler:
+                return failure_url_handler()
         return self.payment.order.get_absolute_url()
